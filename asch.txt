@@ -18,3 +18,40 @@ chmod +x openvpn-install.sh
 scp /root/neha.opvpn neha@client-ip-----on server
 install on client also vpn
 scp openvpn --config /home/neha/neha.ovpn
+******************************************************************************************************************
+
+openssl req -new -newkey rsa:2048 -nodes -keyout /etc/ssl/private/yourdomain.key -out /etc/ssl/certs/yourdomain.csr
+# mkdir /etc/nginx/certs
+# cd /etc/nginx/certs/
+# openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+2) To review the certificate
+````````````````````````````
+# openssl x509 -text -noout -in certificate.pem
+
+cd /etc/nginx/sites-available/
+# vim /abc.conf
+
+server {
+        listen 443;
+	ssl on;
+	ssl_certificate /etc/nginx/certs/certificate.pem
+	ssl_certificate_key /etc/nginx/certs/key.pem
+
+        root /var/www/test.com/html;
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name test.com www.test.com;
+	access_log /var/log/nginx/test.com.access
+	error_log /var/log/nginx/test.com.errors
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
+# nginx -t
+# systemctl restart nginx
+
+# set firewall
+firewall-cmd --zone=public --add-service=https --permanent
+firewall-cmd --reload
+firewall-cmd --list-all
+ curl -ks https://abc.com
